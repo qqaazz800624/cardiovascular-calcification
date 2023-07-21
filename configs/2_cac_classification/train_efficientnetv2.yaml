@@ -1,7 +1,7 @@
 trainer:
   settings:
     accelerator: gpu
-    devices: [5]
+    devices: [1]
 
     max_epochs: &max_epochs 30
 
@@ -24,11 +24,11 @@ workflow:
 
   components:
     model:
-      name: torchvisionmodels
+      name: EfficientNetV2
       path: custom.models.torchvisionmodels
       args:
         model_config:
-          name: efficientnet_v2_m  #efficientnet_v2_s
+          name: efficientnet_v2_l  #efficientnet_v2_s
           path: torchvision.models
           args:
             weights: DEFAULT
