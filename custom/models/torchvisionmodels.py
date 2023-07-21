@@ -3,7 +3,7 @@ import torch.nn as nn
 from manafaln.core.builders import ModelBuilder
 from torchvision.models import efficientnet_v2_s
 
-class torchvisionmodels(nn.Module):
+class EfficientNetV2(nn.Module):
     def __init__(
         self, 
         model_config: dict,
