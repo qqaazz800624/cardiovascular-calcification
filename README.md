@@ -39,7 +39,7 @@ This is the code to develop deep learning model to predict Coronary Artery Calci
 
 1. Clone this repository by running the following command in your terminal:
     ```sh
-    git clone https://github.com/HenleyHwang/cardiovascular-calcification.git
+    git clone https://github.com/qqaazz800624/cardiovascular-calcification.git
     ```
 
 2. Change directory into the folder
