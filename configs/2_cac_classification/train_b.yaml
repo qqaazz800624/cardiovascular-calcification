@@ -1,7 +1,7 @@
 trainer:
   settings:
     accelerator: gpu
-    devices: [1]
+    devices: [3]
 
     max_epochs: &max_epochs 30
 
@@ -24,16 +24,9 @@ workflow:
 
   components:
     model:
-      # name: DenseNet121
-      # args:
-      #   spatial_dims: 2
-      #   in_channels: 3
-      #   out_channels: 1
-      #   pretrained: True
-      #   dropout_prob: 0.1
       name: EfficientNetBN
       args:
-        model_name: efficientnet-b1 # efficientnet-b0
+        model_name: efficientnet-b0 
         in_channels: 3
         num_classes: 1
         spatial_dims: 2
