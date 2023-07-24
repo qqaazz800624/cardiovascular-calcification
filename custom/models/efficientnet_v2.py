@@ -1,9 +1,10 @@
-
+#%%
 import torch
 import torch.nn as nn
 from manafaln.core.builders import ModelBuilder
-from torchvision.models import efficientnet_v2_s
+from torchvision.models import efficientnet_v2_s, vit_b_16
 
+#%%
 
 class torchvisionmodels(nn.Module):
     def __init__(
