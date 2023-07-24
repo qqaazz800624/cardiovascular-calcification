@@ -1,7 +1,7 @@
 trainer:
   settings:
     accelerator: gpu
-    devices: [5]
+    devices: [3]
 
   callbacks:
   - name: ConfusionMatrixSaver

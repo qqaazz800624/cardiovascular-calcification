@@ -3,7 +3,7 @@ trainer:
     accelerator: gpu
     devices: [3]
 
-    max_epochs: &max_epochs 70
+    max_epochs: &max_epochs 30
 
   callbacks:
     - name: ModelCheckpoint
@@ -26,7 +26,7 @@ workflow:
     model:
       name: EfficientNetBN
       args:
-        model_name: efficientnet-b0 
+        model_name: efficientnet-b3
         in_channels: 3
         num_classes: 1
         spatial_dims: 2
