@@ -1,7 +1,7 @@
 trainer:
   settings:
     accelerator: gpu
-    devices: [3]
+    devices: [6]
 
   callbacks:
   - name: ConfusionMatrixSaver
@@ -17,7 +17,7 @@ workflow:
     model:
       name: EfficientNetBN
       args:
-        model_name: efficientnet-b0
+        model_name: efficientnet-b1
         in_channels: 3
         num_classes: 1
         spatial_dims: 2
