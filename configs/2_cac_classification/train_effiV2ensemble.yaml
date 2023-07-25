@@ -1,7 +1,7 @@
 trainer:
   settings:
     accelerator: gpu
-    devices: [5]
+    devices: [1]
 
     max_epochs: &max_epochs 30
 
