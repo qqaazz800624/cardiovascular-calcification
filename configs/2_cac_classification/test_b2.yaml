@@ -46,11 +46,11 @@ data:
 
   settings:
     data_root: data/neodata/dicom
-    data_list: data/neodata/datalist_b_cv.json
+    data_list: data/neodata/datalist_b_cv2.json
 
   validation:
     data_list_key: 
-      - fold_9
+      - fold_10
     transforms:
     - name: LoadImaged
       args:
