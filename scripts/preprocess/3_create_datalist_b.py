@@ -39,7 +39,7 @@ for uid in uids:
 
 #%%
 
-k = 10 #number of folds
+k = 11 #number of folds
 skf = StratifiedKFold(n_splits=k, random_state=42, shuffle=True)
 k_fold_datalist = {}
 
@@ -55,7 +55,7 @@ for i, (train_idx, test_idx) in enumerate(skf.split(datalist, [data["cac_score"]
 
 #%%
 
-with open("/neodata/oxr/innocare/datalist_b_cv.json", "w") as fp:
+with open("/neodata/oxr/innocare/datalist_b_cv2.json", "w") as fp:
     json.dump(k_fold_datalist, fp, indent=4)
     
 
