@@ -1,0 +1,196 @@
+trainer:
+  settings:
+    accelerator: gpu
+    devices: [1]
+
+    amp_backend: apex
+    amp_level: O1
+    benchmark: True
+
+    # limit_val_batches: 1
+
+  callbacks:
+    - name: ModelSummary
+      args:
+        max_depth: 2
+
+workflow:
+  name: SupervisedLearningV2
+  settings:
+    scheduler:
+      interval: epoch
+      frequency: 1
+    decollate:
+      validation: [label, pred]
+      predict: [image1, image1_meta_dict, pred]
+
+  components:
+    model:
+      name: DeepLabV3Plus
+      path: segmentation_models_pytorch
+      input_keys: image
+      output_keys: pred
+      args:
+        in_channels: 3
+        classes: 6
+        encoder_name: tu-resnest50d
+        encoder_weights: null
+
+    post_transforms:
+      validation:
+        - name: Activationsd
+          args:
+            keys: pred
+            sigmoid: True
+        - name: AsDiscreted
+          args:
+            keys: pred
+            threshold: 0.5
+        - name: SplitDimd
+          args:
+            keys: [pred, label]
+            keepdim: True
+            dim: 0
+            output_postfixes: [Chest_Margin, Lung_Margin, Heart_Margin, Pleural_Effusion, Pneumonia, Nodule]
+      
+      predict:
+        - name: Activationsd
+          args:
+            keys: pred
+            sigmoid: True
+        - name: AsDiscreted
+          args:
+            keys: pred
+            threshold: 0.5
+        - name: OverlayMaskd
+          args:
+            image_keys: image1
+            mask_keys: pred
+            colors: ['#ff7f00', '#ff0000', '#7f007f', '#0000ff', '#00ff00', '#ffff00']
+        - name: SaveImaged
+          args:
+            keys: image1
+            meta_keys: image1_meta_dict
+            output_postfix: pred
+            output_dir: /neodata/oxr/tmuh/pred
+            print_log: false
+            output_ext: png
+            output_dtype: uint8
+            scale: 255
+            resample: true
+
+    metrics:
+      validation:
+        - name: MONAI
+          log_label: Dice/val
+          input_keys: [pred, label]
+          args:
+            name: DiceMetric
+        - name: MONAI
+          log_label: Dice/heart_val
+          input_keys: [pred_Heart_Margin, label_Heart_Margin]
+          args:
+            name: DiceMetric
+        - name: MONAI
+          log_label: Dice/lung_val
+          input_keys: [pred_Lung_Margin, label_Lung_Margin]
+          args:
+            name: DiceMetric
+        - name: MONAI
+          log_label: Dice/chest_val
+          input_keys: [pred_Chest_Margin, label_Chest_Margin]
+          args:
+            name: DiceMetric
+
+data:
+  name: DecathlonDataModule
+
+  settings:
+    data_list: /neodata/oxr/tmuh/datalist.json
+    data_root: /neodata/oxr/tmuh
+    # data_list: /neodata/oxr/innocare/datalist.json
+    # data_root: /neodata/oxr/innocare/dicom
+
+  validation:
+    data_list_key:
+      - fold_4
+    transforms:
+      - name: LoadImaged
+        args:
+          keys: image1
+          ensure_channel_first: True
+          reader: PydicomReader
+      - name: Resized
+        args:
+          keys: image1
+          spatial_size: [512, 512]
+      - name: ScaleIntensityd
+        args:
+          keys: image1
+      - name: SaveImaged
+        args:
+          keys: image1
+          output_postfix: c1
+          output_dir: /neodata/oxr/tmuh/visual/image
+          print_log: false
+          output_ext: png
+          output_dtype: uint8
+          scale: 255
+      - name: LoadImaged
+        args:
+          keys: image2
+          ensure_channel_first: True
+          reader: PydicomReader
+      - name: Resized
+        args:
+          keys: image2
+          spatial_size: [512, 512]
+      - name: ScaleIntensityd
+        args:
+          keys: image2
+      - name: SaveImaged
+        args:
+          keys: image2
+          output_postfix: c2
+          output_dir: /neodata/oxr/tmuh/visual/image
+          print_log: false
+          output_ext: png
+          output_dtype: uint8
+          scale: 255
+      - name: LoadImaged
+        args:
+          keys: image3
+          ensure_channel_first: True
+          reader: PydicomReader
+      - name: Resized
+        args:
+          keys: image3
+          spatial_size: [512, 512]
+      - name: ScaleIntensityd
+        args:
+          keys: image3
+      - name: SaveImaged
+        args:
+          keys: image3
+          output_postfix: c3
+          output_dir: /neodata/oxr/tmuh/visual/image
+          print_log: false
+          output_ext: png
+          output_dtype: uint8
+          scale: 255
+      - name: ConcatItemsd
+        args:
+          keys: [image1, image2, image3]
+          name: image
+      - name: EnsureTyped
+        args:
+          keys: image
+          dtype: float32
+    dataset:
+      name: Dataset
+    dataloader:
+      name: DataLoader
+      args:
+        batch_size: 1
+        shuffle: false
+        num_workers: 8

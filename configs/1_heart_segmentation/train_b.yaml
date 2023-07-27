@@ -2,7 +2,7 @@ trainer: &trainer
   settings:
     accelerator: gpu
     devices:
-      - 3
+      - 1
 
     amp_backend: apex
     amp_level: O1
@@ -74,6 +74,22 @@ workflow:
 
 
     post_transforms:
+      training:
+        - name: Activationsd
+          args:
+            keys: pred
+            sigmoid: True
+        - name: AsDiscreted
+          args:
+            keys: pred
+            threshold: 0.5
+        - name: SplitDimd
+          args:
+            keys: [pred, label]
+            keepdim: True
+            dim: 0
+            output_postfixes: [Chest_Margin, Lung_Margin, Heart_Margin, Pleural_Effusion, Pneumonia, Nodule]
+
       validation:
         - name: Activationsd
           args:
@@ -99,6 +115,12 @@ workflow:
           args:
             keys: pred
             threshold: 0.5
+        - name: SplitDimd
+          args:
+            keys: [pred, label]
+            keepdim: True
+            dim: 0
+            output_postfixes: [Chest_Margin, Lung_Margin, Heart_Margin, Pleural_Effusion, Pneumonia, Nodule]
         - name: OverlayMaskd
           args:
             image_keys: image1
@@ -117,17 +139,28 @@ workflow:
             resample: true
 
     metrics:
-      # training:
-      #   - name: MONAI
-      #     log_label: Dice/training
-      #     input_keys: [pred, label]
-      #     args:
-      #       name: DiceMetric
-      #   - name: MONAI
-      #     log_label: Dice/heart_training
-      #     input_keys: [pred_Heart_Margin, label_Heart_Margin]
-      #     args:
-      #       name: DiceMetric
+      training:
+        - name: MONAI
+          log_label: Dice/training
+          input_keys: [pred, label]
+          args:
+            name: DiceMetric
+        - name: MONAI
+          log_label: Dice/heart_training
+          input_keys: [pred_Heart_Margin, label_Heart_Margin]
+          args:
+            name: DiceMetric
+        - name: MONAI
+          log_label: Dice/lung_training
+          input_keys: [pred_Lung_Margin, label_Lung_Margin]
+          args:
+            name: DiceMetric
+        - name: MONAI
+          log_label: Dice/chest_training
+          input_keys: [pred_Chest_Margin, label_Chest_Margin]
+          args:
+            name: DiceMetric
+      
       validation:
         - name: MONAI
           log_label: Dice/val
@@ -139,6 +172,38 @@ workflow:
           input_keys: [pred_Heart_Margin, label_Heart_Margin]
           args:
             name: DiceMetric
+        - name: MONAI
+          log_label: Dice/lung_val
+          input_keys: [pred_Lung_Margin, label_Lung_Margin]
+          args:
+            name: DiceMetric
+        - name: MONAI
+          log_label: Dice/chest_val
+          input_keys: [pred_Chest_Margin, label_Chest_Margin]
+          args:
+            name: DiceMetric
+      
+      # predict:
+      #   - name: MONAI
+      #     log_label: Dice/predict
+      #     input_keys: [pred, label]
+      #     args:
+      #       name: DiceMetric
+      #   - name: MONAI
+      #     log_label: Dice/heart_predict
+      #     input_keys: [pred_Heart_Margin, label_Heart_Margin]
+      #     args:
+      #       name: DiceMetric
+      #   - name: MONAI
+      #     log_label: Dice/lung_predict
+      #     input_keys: [pred_Lung_Margin, label_Lung_Margin]
+      #     args:
+      #       name: DiceMetric
+      #   - name: MONAI
+      #     log_label: Dice/chest_predict
+      #     input_keys: [pred_Chest_Margin, label_Chest_Margin]
+      #     args:
+      #       name: DiceMetric
 
 data:
   name: DecathlonDataModule
