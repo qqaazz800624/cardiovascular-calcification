@@ -117,17 +117,6 @@ workflow:
             resample: true
 
     metrics:
-      # training:
-      #   - name: MONAI
-      #     log_label: Dice/training
-      #     input_keys: [pred, label]
-      #     args:
-      #       name: DiceMetric
-      #   - name: MONAI
-      #     log_label: Dice/heart_training
-      #     input_keys: [pred_Heart_Margin, label_Heart_Margin]
-      #     args:
-      #       name: DiceMetric
       validation:
         - name: MONAI
           log_label: Dice/val

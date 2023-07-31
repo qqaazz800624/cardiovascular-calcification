@@ -1,7 +1,7 @@
 trainer:
   settings:
     accelerator: gpu
-    devices: [1]
+    devices: [3]
 
     max_epochs: &max_epochs 40
 
@@ -26,7 +26,7 @@ workflow:
     model:
       name: EfficientNetBN
       args:
-        model_name: efficientnet-b2
+        model_name: efficientnet-b3
         in_channels: 3
         num_classes: 1
         spatial_dims: 2
