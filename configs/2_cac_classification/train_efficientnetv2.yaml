@@ -1,9 +1,9 @@
 trainer:
   settings:
     accelerator: gpu
-    devices: [5]
+    devices: [2]
 
-    max_epochs: &max_epochs 30
+    max_epochs: &max_epochs 50
 
   callbacks:
     - name: ModelCheckpoint

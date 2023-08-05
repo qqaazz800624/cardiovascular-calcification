@@ -50,9 +50,9 @@ workflow:
           args:
             image_keys: image_front_combined
             mask_keys: pred
-            colors: '#ffff00' #   #7f007f
+            colors: '#7f007f' 
             alpha: 0.25
-            indices: 5 #   2
+            indices: 2 
         - name: SaveImaged
           args:
             keys: image_front_combined

@@ -1,7 +1,7 @@
 trainer:
   settings:
     accelerator: gpu
-    devices: [0]
+    devices: [2]
 
     max_epochs: &max_epochs 30
 
@@ -30,13 +30,7 @@ workflow:
         in_channels: 3
         out_channels: 1
         pretrained: True
-        #dropout_prob: 0.1
-      # name: resnet18
-      # path: monai.networks.nets
-      # args:
-      #   n_input_channels: 3
-      #   num_classes: 1
-      #   spatial_dims: 2
+        
 
     loss:
     - name: BCELoss
@@ -121,8 +115,6 @@ data:
             in_channels: 1
             out_channels: 1
             pretrained: False
-    # - name: HeartSegmentationd
-    #   path: custom.transforms.heart_seg
     - name: LoadImaged
       args:
         keys: image_front_soft
