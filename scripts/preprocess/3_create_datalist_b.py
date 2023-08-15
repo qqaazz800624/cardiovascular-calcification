@@ -39,7 +39,7 @@ for uid in uids:
 
 #%%
 
-k = 11 #number of folds
+k = 5 #number of folds
 skf = StratifiedKFold(n_splits=k, random_state=42, shuffle=True)
 k_fold_datalist = {}
 

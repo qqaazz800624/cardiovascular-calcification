@@ -1,9 +1,9 @@
 trainer:
   settings:
     accelerator: gpu
-    devices: [3]
+    devices: [2]
 
-    max_epochs: &max_epochs 40
+    max_epochs: &max_epochs 60
 
   callbacks:
     - name: ModelCheckpoint
@@ -26,7 +26,7 @@ workflow:
     model:
       name: EfficientNetBN
       args:
-        model_name: efficientnet-b3
+        model_name: efficientnet-b2
         in_channels: 3
         num_classes: 1
         spatial_dims: 2
@@ -85,11 +85,6 @@ data:
       - fold_1
       - fold_2
       - fold_3
-      - fold_4
-      - fold_5
-      - fold_6
-      - fold_7
-      - fold_8
     transforms:
     - name: LoadImaged
       args:
@@ -245,7 +240,7 @@ data:
 
   validation:
     data_list_key: 
-      - fold_9
+      - fold_4
     transforms:
     - name: LoadImaged
       args:
