@@ -60,7 +60,6 @@ class DeepLabV3Plus(SegmentationModel):
             self.classification_head = None
 
     def random_forward(self, x):
-        """Sequentially pass `x` trough model`s encoder, decoder and heads"""
 
         self.check_input_shape(x)
 

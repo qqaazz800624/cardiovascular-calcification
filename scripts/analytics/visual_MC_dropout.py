@@ -5,7 +5,7 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 from monai.transforms import LoadImage, Resize, ScaleIntensity
-from heart_seg_MCDropout import HeartSegmentationMCDropout
+from scripts.analytics.heart_seg_MCDropout import HeartSegmentationMCDropout
 
 
 def visual_single_img(img_no):

@@ -5,7 +5,7 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 from monai.transforms import LoadImage, Resize, ScaleIntensity
-from heart_seg_MCDropout import HeartSegmentationMCDropout
+from scripts.analytics.heart_seg_MCDropout import HeartSegmentationMCDropout
 from seg_model import DeepLabV3Plus
 
 model_weight = 'heart_seg_dropout.ckpt'
