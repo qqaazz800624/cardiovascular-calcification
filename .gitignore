@@ -8,3 +8,4 @@ playground.py
 *.ckpt
 *__pycache__*
 radiomics
+encoders
