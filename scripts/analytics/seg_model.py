@@ -7,7 +7,9 @@ from segmentation_models_pytorch.base import (
     ClassificationHead,
 )
 from segmentation_models_pytorch.encoders import get_encoder
-from segmentation_models_pytorch.decoders.deeplabv3.decoder import DeepLabV3Decoder, DeepLabV3PlusDecoder
+#from scripts.analytics.deeplabv3plus_custom.encoders import get_encoder
+from segmentation_models_pytorch.decoders.deeplabv3.decoder import DeepLabV3PlusDecoder
+#from scripts.analytics.deeplabv3plus_custom.decoder import DeepLabV3PlusDecoder
 
 
 class DeepLabV3Plus(SegmentationModel):
@@ -64,7 +66,13 @@ class DeepLabV3Plus(SegmentationModel):
         self.check_input_shape(x)
 
         features = self.encoder(x)
-        decoder_output = self.decoder(*features)
+
+        features_dropout = []
+        for feature in features:
+            features_dropout.append(dropout(feature, p=0.5))
+
+        #decoder_output = self.decoder(*features)
+        decoder_output = self.decoder(*features_dropout)
         decoder_output = dropout(decoder_output)
         masks = self.segmentation_head(decoder_output)
 
