@@ -34,22 +34,11 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 from torch.nn.functional import dropout
+from segmentation_models_pytorch.decoders.deeplabv3.decoder import DeepLabV3PlusDecoder, DeepLabV3Decoder
+from addnoise import AddNoise
 
 __all__ = ["DeepLabV3Decoder"]
 
-
-class DeepLabV3Decoder(nn.Sequential):
-    def __init__(self, in_channels, out_channels=256, atrous_rates=(12, 24, 36)):
-        super().__init__(
-            ASPP(in_channels, out_channels, atrous_rates),
-            nn.Conv2d(out_channels, out_channels, 3, padding=1, bias=False),
-            nn.BatchNorm2d(out_channels),
-            nn.ReLU(),
-        )
-        self.out_channels = out_channels
-
-    def forward(self, *features):
-        return super().forward(features[-1])
 
 
 class DeepLabV3PlusDecoder(nn.Module):
@@ -59,6 +48,7 @@ class DeepLabV3PlusDecoder(nn.Module):
         out_channels=256,
         atrous_rates=(12, 24, 36),
         output_stride=16,
+        dropout_prob = 0.5
     ):
         super().__init__()
         if output_stride not in {8, 16}:
@@ -66,12 +56,14 @@ class DeepLabV3PlusDecoder(nn.Module):
 
         self.out_channels = out_channels
         self.output_stride = output_stride
+        self.dropout_prob = dropout_prob
 
         self.aspp = nn.Sequential(
             ASPP(encoder_channels[-1], out_channels, atrous_rates, separable=True),
             SeparableConv2d(out_channels, out_channels, kernel_size=3, padding=1, bias=False),
             nn.BatchNorm2d(out_channels),
             nn.ReLU(),
+            nn.Dropout2d(self.dropout_prob)
         )
 
         scale_factor = 2 if output_stride == 8 else 4
@@ -83,6 +75,7 @@ class DeepLabV3PlusDecoder(nn.Module):
             nn.Conv2d(highres_in_channels, highres_out_channels, kernel_size=1, bias=False),
             nn.BatchNorm2d(highres_out_channels),
             nn.ReLU(),
+            nn.Dropout2d(self.dropout_prob)
         )
         self.block2 = nn.Sequential(
             SeparableConv2d(
@@ -94,23 +87,24 @@ class DeepLabV3PlusDecoder(nn.Module):
             ),
             nn.BatchNorm2d(out_channels),
             nn.ReLU(),
+            nn.Dropout2d(self.dropout_prob)
         )
         
 
     def forward(self, *features):
         aspp_features = self.aspp(features[-1])
-        #aspp_features = dropout(aspp_features, p=0.25)
         aspp_features = self.up(aspp_features)
         high_res_features = self.block1(features[-4])
         concat_features = torch.cat([aspp_features, high_res_features], dim=1)
-        concat_features = dropout(concat_features, p=0.25)
         fused_features = self.block2(concat_features)
-        fused_features = dropout(fused_features, p=0.25)
         return fused_features
 
 
 class ASPPConv(nn.Sequential):
-    def __init__(self, in_channels, out_channels, dilation):
+    def __init__(self, 
+                 in_channels, 
+                 out_channels, 
+                 dilation):
         super().__init__(
             nn.Conv2d(
                 in_channels,
@@ -122,6 +116,7 @@ class ASPPConv(nn.Sequential):
             ),
             nn.BatchNorm2d(out_channels),
             nn.ReLU(),
+            nn.Dropout2d()
         )
 
 
@@ -138,6 +133,7 @@ class ASPPSeparableConv(nn.Sequential):
             ),
             nn.BatchNorm2d(out_channels),
             nn.ReLU(),
+            nn.Dropout2d()
         )
 
 
@@ -148,6 +144,7 @@ class ASPPPooling(nn.Sequential):
             nn.Conv2d(in_channels, out_channels, kernel_size=1, bias=False),
             nn.BatchNorm2d(out_channels),
             nn.ReLU(),
+            nn.Dropout2d()
         )
 
     def forward(self, x):
@@ -166,6 +163,7 @@ class ASPP(nn.Module):
                 nn.Conv2d(in_channels, out_channels, 1, bias=False),
                 nn.BatchNorm2d(out_channels),
                 nn.ReLU(),
+                nn.Dropout2d()
             )
         )
 

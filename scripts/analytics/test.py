@@ -9,6 +9,37 @@ from monai.transforms import LoadImage, Resize, ScaleIntensity
 from seg_model import DeepLabV3Plus
 
 
+#%%
+
+import torch
+from manafaln.core.builders import ModelBuilder
+
+model_weight = 'heart_seg.ckpt'
+model_config = {'name': 'DropoutDeepLabV3Plus',
+                'path': 'DropoutDeepLabV3Plus',
+                'args':{
+                    'in_channels': 3,
+                    'classes': 6,
+                    'encoder_name': 'tu-resnest50d',
+                    'encoder_weights': 'None'}
+                }
+
+model = ModelBuilder()(model_config)
+
+#%%
+model_weight = torch.load(model_weight, map_location="cpu")["state_dict"]
+for k in list(model_weight.keys()):
+    k_new = k.replace(
+        "model.", "", 1
+    )  # e.g. "model.conv.weight" => conv.weight"
+    model_weight[k_new] = model_weight.pop(k)
+
+model.load_state_dict(model_weight)
+
+
+#%%
+
+
 model = DeepLabV3Plus(in_channels=3, classes = 6, encoder_name = 'tu-resnest50d', encoder_weights = 'imagenet')
 
 model.eval()

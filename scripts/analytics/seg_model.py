@@ -1,16 +1,18 @@
 from torch import nn
 from typing import Optional
-from torch.nn.functional import dropout
+from torch.nn.functional import dropout, dropout2d
 from segmentation_models_pytorch.base import (
     SegmentationModel,
     SegmentationHead,
     ClassificationHead,
 )
-from segmentation_models_pytorch.encoders import get_encoder
-#from scripts.analytics.deeplabv3plus_custom.encoders import get_encoder
-from segmentation_models_pytorch.decoders.deeplabv3.decoder import DeepLabV3PlusDecoder
-#from scripts.analytics.deeplabv3plus_custom.decoder import DeepLabV3PlusDecoder
-
+#from segmentation_models_pytorch.encoders import get_encoder
+from deeplabv3plus_custom.encoders import get_encoder
+#from segmentation_models_pytorch.decoders.deeplabv3.decoder import DeepLabV3PlusDecoder
+from deeplabv3plus_custom.decoder import DeepLabV3PlusDecoder
+from torch import randn_like, randint
+import torch
+from addnoise import AddNoise
 
 class DeepLabV3Plus(SegmentationModel):
 
@@ -27,6 +29,8 @@ class DeepLabV3Plus(SegmentationModel):
         activation: Optional[str] = None,
         upsampling: int = 4,
         aux_params: Optional[dict] = None,
+        noise_std: float = 2,
+        dropout_prob = 0.5
     ):
         super().__init__()
 
@@ -60,20 +64,34 @@ class DeepLabV3Plus(SegmentationModel):
             self.classification_head = ClassificationHead(in_channels=self.encoder.out_channels[-1], **aux_params)
         else:
             self.classification_head = None
+        
+        self.noise_std = noise_std
+        self.dropout_prob = dropout_prob
+    
+    def enable_random(self, model):
+        for m in model.modules():
+            if m.__class__.__name__.startswith('Dropout') or m.__class__.__name__.startswith('AddNoise'):
+                m.train()
+    
 
     def random_forward(self, x):
 
         self.check_input_shape(x)
-
         features = self.encoder(x)
 
-        features_dropout = []
-        for feature in features:
-            features_dropout.append(dropout(feature, p=0.5))
+        # features_dropout = []
+        # for feature in features:
+        #     dropout_tmp = dropout(feature, p=self.dropout_prob) 
+        #     noise_tmp = randn_like(feature) * self.noise_std
+        #     tmp = dropout_tmp + noise_tmp
+        #     features_dropout.append(tmp)
+            #features_dropout.append(dropout_tmp)
 
-        #decoder_output = self.decoder(*features)
-        decoder_output = self.decoder(*features_dropout)
-        decoder_output = dropout(decoder_output)
+        decoder_output = self.decoder(*features)
+        # decoder_output = self.decoder(*features_dropout)
+        # decoder_output = dropout(decoder_output)
+        # gaussian_noise = randn_like(decoder_output) * self.noise_std
+        # masks = self.segmentation_head(decoder_output + gaussian_noise)
         masks = self.segmentation_head(decoder_output)
 
         if self.classification_head is not None:
@@ -81,3 +99,4 @@ class DeepLabV3Plus(SegmentationModel):
             return masks, labels
 
         return masks
+    

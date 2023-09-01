@@ -21,10 +21,12 @@ class HeartSegmentationMCDropout(Transform):
 
         self.model.load_state_dict(model_weight)
         self.model.eval()
+        self.model.enable_dropout(self.model)
 
     def __call__(self, data):
         # img shape (C, W, H) => (B, C, W, H)
         img = data.unsqueeze(0)
+        #self.model.enable_dropout(self.model)
         logit = self.model.random_forward(img)
         discreter = AsDiscrete(threshold=0.5)
         mask_heart = torch.sigmoid(logit)[0, 2]   # take segmentation mask of heart
