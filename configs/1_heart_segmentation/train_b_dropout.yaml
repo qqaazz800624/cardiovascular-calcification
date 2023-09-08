@@ -1,7 +1,7 @@
 trainer: &trainer
   settings:
     accelerator: gpu
-    devices: [2]
+    devices: [3]
 
     amp_backend: apex
     amp_level: O1
