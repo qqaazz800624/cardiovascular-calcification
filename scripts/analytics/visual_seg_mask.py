@@ -7,10 +7,10 @@ import numpy as np
 from monai.transforms import LoadImage, Resize, ScaleIntensity
 from heart_seg_MCDropout import HeartSegmentationMCDropout
 
-
+''
 def visual_single_img(img_no):
     
-    #model_weight = 'heart_seg_dropout.ckpt'
+    #model_weight = 'deeplabv3plus/model_ckpts/heart_seg_dropout.ckpt'
     model_weight = 'heart_seg.ckpt'
     model_config = {'name': 'DeepLabV3Plus',
                     'path': 'seg_model',
@@ -65,7 +65,7 @@ def visual_single_img(img_no):
     plt.show()
 
 
-visual_single_img('148_20230221') 
+visual_single_img('006_20221109') 
 
 #%%
 

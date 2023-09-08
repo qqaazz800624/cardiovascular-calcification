@@ -1,14 +1,14 @@
 from torch import nn
 from typing import Optional
-
+from torch.nn.functional import dropout, dropout2d
 from segmentation_models_pytorch.base import (
     SegmentationModel,
     SegmentationHead,
     ClassificationHead,
 )
 from segmentation_models_pytorch.encoders import get_encoder
-from segmentation_models_pytorch.decoders.deeplabv3.decoder import DeepLabV3Decoder, DeepLabV3PlusDecoder
-
+from custom.models.decoder import DeepLabV3PlusDecoder
+from torch import randn_like, randint
 
 class DeepLabV3Plus(SegmentationModel):
 
@@ -25,6 +25,8 @@ class DeepLabV3Plus(SegmentationModel):
         activation: Optional[str] = None,
         upsampling: int = 4,
         aux_params: Optional[dict] = None,
+        noise_std: float = 2,
+        dropout_prob = 0.5
     ):
         super().__init__()
 
@@ -54,21 +56,25 @@ class DeepLabV3Plus(SegmentationModel):
             upsampling=upsampling,
         )
 
-        self.dropout = nn.Dropout2d(p=0.1)
-
         if aux_params is not None:
             self.classification_head = ClassificationHead(in_channels=self.encoder.out_channels[-1], **aux_params)
         else:
             self.classification_head = None
+        
+        self.noise_std = noise_std
+        self.dropout_prob = dropout_prob
+    
+    def enable_random(self, model):
+        for m in model.modules():
+            if m.__class__.__name__.startswith('Dropout') or m.__class__.__name__.startswith('AddNoise'):
+                m.train()
+    
 
-    def forward(self, x):
-        """Sequentially pass `x` trough model`s encoder, decoder and heads"""
+    def random_forward(self, x):
 
         self.check_input_shape(x)
-
         features = self.encoder(x)
         decoder_output = self.decoder(*features)
-        decoder_output = self.dropout(decoder_output)
         masks = self.segmentation_head(decoder_output)
 
         if self.classification_head is not None:

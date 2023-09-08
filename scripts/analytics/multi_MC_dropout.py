@@ -10,7 +10,8 @@ from segmentation_MCDropout import SegmentationMCDropout
 
 def MCDropout(img_no, num_samples):
     
-    model_weight = 'heart_seg.ckpt'    
+    #model_weight = 'deeplabv3plus_custom/model_ckpts/heart_seg.ckpt'    
+    model_weight = 'deeplabv3plus_custom/model_ckpts/heart_seg_dropout.ckpt'   
     model_config = {'name': 'DeepLabV3Plus',
                     'path': 'seg_model',
                     'args':{
@@ -58,21 +59,21 @@ imgs_list = ['054_20230116', '129_20230216', '144_20230221', '146_20230221',
                   ]
 #img_no = bad_imgs_list[5] #bad examples
 #img_no = good_imgs_list[0] #good examples
-img_no = '007_20221109'
-num_samples = 10
-output = MCDropout(img_no = img_no, num_samples = num_samples)
+#img_no = '007_20221109'
+num_samples = 100
+#output = MCDropout(img_no = img_no, num_samples = num_samples)
 
 
 #%%
 from monai.transforms import AsDiscrete
-discreter = AsDiscrete(threshold=0.001)
+discreter = AsDiscrete(threshold=0.01)
 
 for img in imgs_list:
     img_no = img
     output = MCDropout(img_no = img_no, num_samples = num_samples)
     pointwise_variance = torch.stack(output, dim=0).var(dim=0, keepdim=False)
     high_var = discreter(pointwise_variance).sum()
-    vmin, vmax = 0, 0.03
+    vmin, vmax = 0, 0.05
     plt.imshow(pointwise_variance.detach().numpy().T, cmap='plasma', aspect='auto', vmin=vmin, vmax=vmax)
     plt.colorbar()
     plt.xlabel(f'Uncertainty: {high_var}')
@@ -81,16 +82,13 @@ for img in imgs_list:
     plt.close()
 
 #%%
-from monai.transforms import AsDiscrete
-discreter = AsDiscrete(threshold=0.2)
 
-for i in range(10):
-    #high_logits = discreter(output[i]).sum()
-    plt.imshow(output[i].detach().numpy().T, cmap='plasma', aspect='auto')
-    plt.colorbar()
-    #plt.xlabel(f'The number of high logits: {high_logits}')
-    plt.title(f'Heatmap of sample_{i}')
-    plt.show()
+# for i in range(10):
+#     vmin, vmax = 0, 0.6
+#     plt.imshow(output[i].detach().numpy().T, cmap='plasma', aspect='auto', vmin=vmin, vmax=vmax)
+#     plt.colorbar()
+#     plt.title(f'Heatmap of sample_{i}')
+#     plt.show()
 
 
 #%%

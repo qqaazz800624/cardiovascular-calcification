@@ -21,7 +21,7 @@ class HeartSegmentationMCDropout(Transform):
 
         self.model.load_state_dict(model_weight)
         self.model.eval()
-        self.model.enable_dropout(self.model)
+        self.model.enable_random(self.model)
 
     def __call__(self, data):
         # img shape (C, W, H) => (B, C, W, H)

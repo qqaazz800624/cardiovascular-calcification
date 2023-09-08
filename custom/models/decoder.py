@@ -33,9 +33,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import torch
 from torch import nn
 from torch.nn import functional as F
-from torch.nn.functional import dropout
 from segmentation_models_pytorch.decoders.deeplabv3.decoder import DeepLabV3PlusDecoder, DeepLabV3Decoder
-from addnoise import AddNoise
+from custom.models.addnoise import AddNoise
 
 __all__ = ["DeepLabV3Decoder"]
 
@@ -48,7 +47,8 @@ class DeepLabV3PlusDecoder(nn.Module):
         out_channels=256,
         atrous_rates=(12, 24, 36),
         output_stride=16,
-        dropout_prob = 0.5
+        dropout_prob = 0.5,
+        noise_stddev = 1.5
     ):
         super().__init__()
         if output_stride not in {8, 16}:
@@ -57,13 +57,15 @@ class DeepLabV3PlusDecoder(nn.Module):
         self.out_channels = out_channels
         self.output_stride = output_stride
         self.dropout_prob = dropout_prob
+        self.noise_stddev = noise_stddev
 
         self.aspp = nn.Sequential(
             ASPP(encoder_channels[-1], out_channels, atrous_rates, separable=True),
             SeparableConv2d(out_channels, out_channels, kernel_size=3, padding=1, bias=False),
             nn.BatchNorm2d(out_channels),
             nn.ReLU(),
-            nn.Dropout2d(self.dropout_prob)
+            nn.Dropout2d(self.dropout_prob),
+            #AddNoise(self.noise_stddev)
         )
 
         scale_factor = 2 if output_stride == 8 else 4
@@ -104,7 +106,8 @@ class ASPPConv(nn.Sequential):
     def __init__(self, 
                  in_channels, 
                  out_channels, 
-                 dilation):
+                 dilation
+                 ):
         super().__init__(
             nn.Conv2d(
                 in_channels,
@@ -116,12 +119,16 @@ class ASPPConv(nn.Sequential):
             ),
             nn.BatchNorm2d(out_channels),
             nn.ReLU(),
-            nn.Dropout2d()
+            #nn.Dropout2d()
         )
 
 
 class ASPPSeparableConv(nn.Sequential):
-    def __init__(self, in_channels, out_channels, dilation):
+    def __init__(self, 
+                 in_channels, 
+                 out_channels, 
+                 dilation,
+                 noise_stddev = 1):
         super().__init__(
             SeparableConv2d(
                 in_channels,
@@ -129,11 +136,12 @@ class ASPPSeparableConv(nn.Sequential):
                 kernel_size=3,
                 padding=dilation,
                 dilation=dilation,
-                bias=False,
+                bias=False
             ),
             nn.BatchNorm2d(out_channels),
             nn.ReLU(),
-            nn.Dropout2d()
+            #nn.Dropout2d(),
+            #AddNoise(noise_stddev)
         )
 
 
