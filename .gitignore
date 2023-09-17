@@ -10,3 +10,4 @@ playground.py
 radiomics
 encoders
 timm
+*.json
