@@ -20,7 +20,7 @@ def MCDropout(img_no, num_samples):
                         'encoder_name': 'tu-resnest50d',
                         'encoder_weights': 'None'}
                     }
-    
+    device = "cuda:3" if torch.cuda.is_available() else "cuda:2"
     img_no = img_no
     num_samples = num_samples
 
@@ -38,12 +38,13 @@ def MCDropout(img_no, num_samples):
 
     img_pre = []
     for i in range(3):
-        img = loader(path_list[0])
+        img = loader(path_list[i])
         img = resizer(img)
         img = scaler(img)
         img_pre.append(img)
 
     generator_input = torch.cat((img_pre[0], img_pre[1], img_pre[2]), dim=0)
+    generator_input = generator_input.to(device)
     generator_output = masks_generator(generator_input)
     return generator_output
 
@@ -66,9 +67,10 @@ num_samples = 100
 
 #%%
 from monai.transforms import AsDiscrete
+from tqdm import tqdm
 discreter = AsDiscrete(threshold=0.01)
 
-for img in imgs_list:
+for img in tqdm(imgs_list):
     img_no = img
     output = MCDropout(img_no = img_no, num_samples = num_samples)
     pointwise_variance = torch.stack(output, dim=0).var(dim=0, keepdim=False)

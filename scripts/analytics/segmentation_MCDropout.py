@@ -3,8 +3,9 @@ from monai.transforms import Transform, MaskIntensity, AsDiscrete
 
 from manafaln.core.builders import ModelBuilder
 
+device = "cuda:3" if torch.cuda.is_available() else "cuda:2"
 
-class SegmentationMCDropout(Transform):
+class SegmentationMCDropout():
     def __init__(
         self, model_config: dict, model_weight: str, num_samples: int = 10
     ):
@@ -20,6 +21,7 @@ class SegmentationMCDropout(Transform):
             model_weight[k_new] = model_weight.pop(k)
 
         self.model.load_state_dict(model_weight)
+        self.model.to(device)
         #self.model.eval()
 
     def __call__(self, data):
@@ -27,11 +29,12 @@ class SegmentationMCDropout(Transform):
         img = data.unsqueeze(0)
         #discreter = AsDiscrete(threshold=0.5)
         sample_masks = []
+        self.model.eval()
+        self.model.enable_random(self.model)
         for _ in range(self.num_samples):
-            self.model.eval()
-            self.model.enable_random(self.model)
             logit = self.model.random_forward(img)
             mask_heart = torch.sigmoid(logit)[0, 2]    # take segmentation mask of heart
+            mask_heart = mask_heart.detach().cpu()
             sample_masks.append(mask_heart)
-        
+
         return sample_masks
