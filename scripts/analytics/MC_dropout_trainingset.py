@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from monai.transforms import LoadImage, Resize, ScaleIntensity
 from segmentation_MCDropout import SegmentationMCDropout
-
+from segmentation_MCDropout_alea import SegmentationMCDropout_alea
 
 
 def MCDropout(num_samples, fold_no, img_serial):
@@ -87,8 +87,8 @@ for fold_no in fold_no_list:
         pointwise_variance = torch.stack(output, dim=0).var(dim=0, keepdim=False)
         uncertainty = discreter(pointwise_variance).sum()
         uncertainty_list.append(uncertainty.detach().numpy().tolist())
+        #print(uncertainty_list)
 
-print(len(uncertainty_list))
 print(uncertainty_list)
 
 #%%
@@ -99,11 +99,37 @@ import json
 with open('uncertainty_list.json', 'w') as file:
     json.dump(uncertainty_list, file)
 
-# 從 JSON 文件中讀取列表
-# with open('uncertainty_list.json', 'r') as file:
-#     loaded_list = json.load(file)
+#%%
 
-# print(loaded_list)
+import json
+
+# 從 JSON 文件中讀取列表
+with open('uncertainty_list.json', 'r') as file:
+    loaded_list = json.load(file)
+
+#%%
+
+from matplotlib import pyplot as plt
+#plt.hist(loaded_list, bins='auto')
+plt.hist(loaded_list, bins=45, color='blue')
+plt.xlim(5000, 45000)
+plt.show()
+
+#%%
+
+import pandas as pd
+
+df = pd.DataFrame(loaded_list)
+df.describe()
+
+#%%
+import numpy as np
+
+print(np.sort(loaded_list))
+#%%
+print(np.quantile(loaded_list, q=np.arange(0.01, 1, 0.01)))
+
+
 
 #%%
 
