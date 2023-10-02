@@ -34,7 +34,6 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 from segmentation_models_pytorch.decoders.deeplabv3.decoder import DeepLabV3PlusDecoder, DeepLabV3Decoder
-from addnoise import AddNoise
 
 __all__ = ["DeepLabV3Decoder"]
 

@@ -64,15 +64,13 @@ def MCDropout(img_no, num_samples, uncertainty_typ = 'epistemic'):
     generator_output = masks_generator(generator_input)
     return generator_output
 
-
-
 imgs_list = ['054_20230116', '129_20230216', '144_20230221', '146_20230221',
             '148_20230221', '169_20230306', '198_20230315', '022_20221212',
             '006_20221109', '007_20221109', '010_20221111','012_20221115', 
             '013_20221118', '018_20221206', '025_20221213'
                   ]
 
-img_no = '054_20230116'
+img_no = '006_20221109'
 num_samples = 100
 #uncertainty_typ = 'epistemic'
 uncertainty_typ = 'aleatoric'

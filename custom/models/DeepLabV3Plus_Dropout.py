@@ -7,8 +7,9 @@ from segmentation_models_pytorch.base import (
     ClassificationHead,
 )
 from segmentation_models_pytorch.encoders import get_encoder
-from deeplabv3plus_custom.decoder import DeepLabV3PlusDecoder
+from scripts.analytics.deeplabv3plus_custom.decoder import DeepLabV3PlusDecoder
 from torch import randn_like, randint
+#from deeplabv3plus_custom.addnoise import AddNoise
 
 class DeepLabV3Plus(SegmentationModel):
 
