@@ -30,6 +30,7 @@ class SegmentationMCDropout_alea():
         #discreter = AsDiscrete(threshold=0.5)
         sample_masks = []
         self.model.eval()
+        self.model.enable_random(self.model)
         for _ in range(self.num_samples):
             logit = self.model.random_forward(img)
             mask_heart = torch.sigmoid(logit)[0, 2]    # take segmentation mask of heart

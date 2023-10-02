@@ -10,7 +10,6 @@ from segmentation_MCDropout import SegmentationMCDropout
 
 def MCDropout(img_no, num_samples):
     
-    #model_weight = 'deeplabv3plus_custom/model_ckpts/heart_seg.ckpt'    
     model_weight = 'deeplabv3plus_custom/model_ckpts/heart_seg_dropout.ckpt'   
     model_config = {'name': 'DeepLabV3Plus',
                     'path': 'seg_model',
@@ -60,9 +59,9 @@ imgs_list = ['054_20230116', '129_20230216', '144_20230221', '146_20230221',
                   ]
 #img_no = bad_imgs_list[5] #bad examples
 #img_no = good_imgs_list[0] #good examples
-#img_no = '007_20221109'
-num_samples = 100
-#output = MCDropout(img_no = img_no, num_samples = num_samples)
+img_no = '169_20230306'
+num_samples = 10
+output = MCDropout(img_no = img_no, num_samples = num_samples)
 
 
 #%%
@@ -85,12 +84,12 @@ for img in tqdm(imgs_list):
 
 #%%
 
-# for i in range(10):
-#     vmin, vmax = 0, 0.6
-#     plt.imshow(output[i].detach().numpy().T, cmap='plasma', aspect='auto', vmin=vmin, vmax=vmax)
-#     plt.colorbar()
-#     plt.title(f'Heatmap of sample_{i}')
-#     plt.show()
+for i in range(10):
+    vmin, vmax = 0, 0.6
+    plt.imshow(output[i].detach().numpy().T, cmap='plasma', aspect='auto', vmin=vmin, vmax=vmax)
+    plt.colorbar()
+    plt.title(f'Heatmap of sample_{i}')
+    plt.show()
 
 
 #%%

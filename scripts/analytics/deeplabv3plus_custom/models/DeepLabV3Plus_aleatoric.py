@@ -9,7 +9,7 @@ from segmentation_models_pytorch.base import (
 from segmentation_models_pytorch.encoders import get_encoder
 #from deeplabv3plus_custom.encoders import get_encoder
 #from segmentation_models_pytorch.decoders.deeplabv3.decoder import DeepLabV3PlusDecoder
-from custom.models.decoder_aleatoric import DeepLabV3PlusDecoder
+from deeplabv3plus_custom.decoder_aleatoric import DeepLabV3PlusDecoder
 from torch import randn_like, randint
 #from deeplabv3plus_custom.addnoise import AddNoise
 
@@ -67,15 +67,30 @@ class DeepLabV3Plus(SegmentationModel):
         self.noise_std = noise_std
         self.dropout_prob = dropout_prob
     
+    def enable_random(self, model):
+        for m in model.modules():
+            if m.__class__.__name__.startswith('Dropout') or m.__class__.__name__.startswith('AddNoise'):
+                m.train()
     
 
     def random_forward(self, x):
 
         self.check_input_shape(x)
         features = self.encoder(x)
+
+        # features_dropout = []
+        # for feature in features:
+        #     dropout_tmp = dropout(feature, p=self.dropout_prob) 
+        #     noise_tmp = randn_like(feature) * self.noise_std
+        #     tmp = dropout_tmp + noise_tmp
+        #     features_dropout.append(tmp)
+            #features_dropout.append(dropout_tmp)
+
         decoder_output = self.decoder(*features)
         # decoder_output = self.decoder(*features_dropout)
-        decoder_output = dropout(decoder_output)
+        # decoder_output = dropout(decoder_output)
+        # gaussian_noise = randn_like(decoder_output) * self.noise_std
+        # masks = self.segmentation_head(decoder_output + gaussian_noise)
         masks = self.segmentation_head(decoder_output)
 
         if self.classification_head is not None:

@@ -122,7 +122,7 @@ class ASPPConv(nn.Sequential):
             nn.BatchNorm2d(out_channels),
             nn.ReLU(),
             # aleatoric --> no
-            nn.Dropout2d()
+            #nn.Dropout2d()
         )
 
 
@@ -144,7 +144,7 @@ class ASPPSeparableConv(nn.Sequential):
             nn.BatchNorm2d(out_channels),
             nn.ReLU(),
             # aleatoric --> no
-            nn.Dropout2d(),
+            #nn.Dropout2d(),
         )
 
 
@@ -156,7 +156,7 @@ class ASPPPooling(nn.Sequential):
             nn.BatchNorm2d(out_channels),
             nn.ReLU(),
             # aleatoric --> no
-            nn.Dropout2d()
+            #nn.Dropout2d()
         )
 
     def forward(self, x):
@@ -176,7 +176,7 @@ class ASPP(nn.Module):
                 nn.BatchNorm2d(out_channels),
                 nn.ReLU(),
                 # aleatoric --> no
-                nn.Dropout2d()
+                #nn.Dropout2d()
             )
         )
 

@@ -3,9 +3,10 @@
 import torch
 from manafaln.core.builders import ModelBuilder
 
-model_weight = 'heart_seg.ckpt'
+model_weight = 'deeplabv3plus_custom/model_ckpts/heart_seg_dropout.ckpt'
 model_config = {'name': 'DeepLabV3Plus',
-                'path': 'seg_model',
+                'path': 'deeplabv3plus_custom.models.DeepLabV3Plus_Dropout',
+                #'path': 'deeplabv3plus_custom.models.DeepLabV3Plus_aleatoric',
                 'args':{
                     'in_channels': 3,
                     'classes': 6,
