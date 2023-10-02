@@ -27,7 +27,7 @@ workflow:
   components:
     model:
       name: DeepLabV3Plus
-      path: segmentation_models_pytorch
+      path: custom.models.DeepLabV3Plus_Dropout
       input_keys: image
       output_keys: pred
       args:

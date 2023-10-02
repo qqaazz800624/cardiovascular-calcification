@@ -42,7 +42,7 @@ workflow:
   components:
     model:
       name: DeepLabV3Plus
-      path: custom.models.seg_model
+      path: custom.models.DeepLabV3Plus_Dropout
       input_keys: image
       output_keys: pred
       args:
@@ -295,8 +295,8 @@ data:
 
   validation:
     data_list_key:
-      - fold_4
-      #- fold_3
+      #- fold_4
+      - fold_3
     transforms:
       - name: LoadImaged
         args:
