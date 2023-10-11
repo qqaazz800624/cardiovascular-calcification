@@ -11,3 +11,4 @@ radiomics
 encoders
 timm
 *.json
+*.pth
