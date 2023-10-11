@@ -75,6 +75,63 @@ num_samples = 100
 #uncertainty_typ = 'epistemic'
 uncertainty_typ = 'aleatoric'
 output = MCDropout(img_no = img_no, num_samples = num_samples, uncertainty_typ = uncertainty_typ)
+pointwise_variance = torch.stack(output, dim=0).var(dim=0, keepdim=False)
+
+#%%
+heatmap_output = pointwise_variance.T
+save_path = f'results/heatmap_{uncertainty_typ}_{img_no}.pth'
+torch.save(heatmap_output, save_path)
+
+#%%
+import torch
+
+img_no = '022_20221212'
+heatmap = []
+type_list = ['epistemic', 'aleatoric']
+for uncertainty_typ in type_list:
+    load_path = f'results/heatmap_{uncertainty_typ}_{img_no}.pth'
+    heatmap.append(torch.load(load_path))
+
+#%%
+import matplotlib.pyplot as plt
+import numpy as np
+from monai.transforms import AsDiscrete
+
+discreter = AsDiscrete(threshold=0.01)
+
+reduced_heatmap = heatmap[0] - heatmap[1]
+high_var = discreter(reduced_heatmap).sum()
+vmin, vmax = 0, 0.03
+plt.imshow(reduced_heatmap.detach().numpy(), cmap='plasma', aspect='auto', vmin=vmin, vmax=vmax)
+plt.colorbar()
+plt.xlabel(f'Uncertainty: {high_var}')
+plt.title(f'Epistemic Uncertainty: {img_no}')
+plt.show()
+
+#%%
+
+vmin, vmax = 0, 0.03
+high_var = discreter(heatmap[0]).sum()
+plt.imshow(heatmap[0].detach().numpy(), cmap='plasma', aspect='auto', vmin=vmin, vmax=vmax)
+plt.colorbar()
+plt.xlabel(f'Uncertainty: {high_var}')
+plt.title(f'Uncertainty: {img_no}')
+plt.show()
+
+#%%
+
+vmin, vmax = 0, 0.03
+high_var = discreter(heatmap[1]).sum()
+plt.imshow(heatmap[1].detach().numpy(), cmap='plasma', aspect='auto', vmin=vmin, vmax=vmax)
+plt.colorbar()
+plt.xlabel(f'Uncertainty: {high_var}')
+plt.title(f'Aleatoric Uncertainty: {img_no}')
+plt.show()
+
+#%%
+
+from skimage import restoration
+
 
 
 #%%
