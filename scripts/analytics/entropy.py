@@ -1,26 +1,18 @@
 #%%
-import json
-import torch
-import os
-import matplotlib.pyplot as plt
-import numpy as np
-from monai.transforms import LoadImage, Resize, ScaleIntensity
-from segmentation_MCDropout import SegmentationMCDropout
-from segmentation_MCDropout_alea import SegmentationMCDropout_alea
-
-#%%
 import torch
 
-img_no = '022_20221212'
+#img_no = '022_20221212'
 #img_no = '006_20221109'
+#img_no = '054_20230116'
+#img_no = '146_20230221'
+#img_no = '148_20230221'
+img_no = '144_20230221'
+
 heatmap = []
 type_list = ['epistemic', 'aleatoric']
 for uncertainty_typ in type_list:
     load_path = f'results/heatmap_{uncertainty_typ}_{img_no}.pth'
     heatmap.append(torch.load(load_path))
-
-
-#%%
 
 
 def compute_img_entropy(image_array, bins = 6, vmin = 0, vmax = 0.03):
@@ -36,10 +28,9 @@ def compute_img_entropy(image_array, bins = 6, vmin = 0, vmax = 0.03):
     return entropy, image_array
 
 
-#%%
-
 # Overall Uncertainty: epistemic + aleatoric uncertainty
 import matplotlib.pyplot as plt
+import numpy as np
 
 sample_no = 0
 image_array = heatmap[sample_no].detach().numpy()
@@ -51,7 +42,6 @@ plt.xlabel(f'Shannon Entropy: {np.round(entropy, 4)}')
 plt.title(f'Overall Uncertainty: {img_no}')
 plt.show()
 
-#%% 
 # aleatoric uncertainty
 
 sample_no = 1
@@ -64,7 +54,7 @@ plt.xlabel(f'Shannon Entropy: {np.round(entropy, 4)}')
 plt.title(f'Aleatoric Uncertainty: {img_no}')
 plt.show()
 
-#%% 
+
 # epistemic uncertainty obtained by Richardson-Lucy Deconvolution
 
 from skimage import restoration
@@ -87,5 +77,3 @@ plt.show()
 
 
 
-
-#%%
