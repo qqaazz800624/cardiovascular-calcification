@@ -32,7 +32,8 @@ class SegmentationMCDropout():
         sample_masks = []
         self.model.eval()
         self.model.enable_random(self.model)
-        for _ in tqdm(range(self.num_samples)):
+        #for _ in tqdm(range(self.num_samples)):
+        for _ in range(self.num_samples):
             logit = self.model.random_forward(img)
             mask_heart = torch.sigmoid(logit)[0, 2]    # take segmentation mask of heart
             mask_heart = mask_heart.detach().cpu()
