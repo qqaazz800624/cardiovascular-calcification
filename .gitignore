@@ -12,3 +12,4 @@ encoders
 timm
 *.json
 *.pth
+*.npy
