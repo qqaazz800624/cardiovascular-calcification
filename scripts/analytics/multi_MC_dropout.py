@@ -12,7 +12,7 @@ def MCDropout(img_no, num_samples):
     
     model_weight = 'deeplabv3plus_custom/model_ckpts/heart_seg_dropout.ckpt'   
     model_config = {'name': 'DeepLabV3Plus',
-                    'path': 'seg_model',
+                    'path': 'deeplabv3plus_custom.models.DeepLabV3Plus_Dropout',
                     'args':{
                         'in_channels': 3,
                         'classes': 6,
@@ -59,10 +59,18 @@ imgs_list = ['054_20230116', '129_20230216', '144_20230221', '146_20230221',
                   ]
 #img_no = bad_imgs_list[5] #bad examples
 #img_no = good_imgs_list[0] #good examples
-img_no = '169_20230306'
-num_samples = 10
+
+img_no = '007_20221109'
+num_samples = 100
 output = MCDropout(img_no = img_no, num_samples = num_samples)
 
+
+
+np_output = []
+for i in range(num_samples):
+     np_output.append(output[i].detach().numpy().T)
+
+np.save(f'results/MC_samples_{img_no}.npy', np_output)
 
 #%%
 from monai.transforms import AsDiscrete
