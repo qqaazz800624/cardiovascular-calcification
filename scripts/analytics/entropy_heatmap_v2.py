@@ -13,6 +13,7 @@ def MCDropout(img_no, num_samples):
     model_weight = 'deeplabv3plus_custom/model_ckpts/heart_seg_dropout.ckpt'   
     model_config = {'name': 'DeepLabV3Plus',
                     'path': 'deeplabv3plus_custom.models.DeepLabV3Plus_Dropout',
+                    #'path': 'deeplabv3plus_custom.models.DeepLabV3Plus_aleatoric',
                     'args':{
                         'in_channels': 3,
                         'classes': 6,
@@ -55,11 +56,12 @@ imgs_list = ['054_20230116', '129_20230216', '144_20230221', '146_20230221',
                   ]
 
 
-img_no = '169_20230306'
+img_no = '022_20221212'
 num_samples = 100
 output = MCDropout(img_no = img_no, num_samples = num_samples)
 
-def entropy_generator(MCD_output, bins=100, vmin=0, vmax=1):
+
+def entropy_generator(MCD_output, bins=100, vmin=0, vmax=1, threshold=4):
     device = "cuda:3" if torch.cuda.is_available() else "cpu"
     stacked_output = torch.stack(MCD_output, dim=0).to(device)
     entropy_map = torch.zeros(stacked_output.shape[1:], device=device)
@@ -73,38 +75,42 @@ def entropy_generator(MCD_output, bins=100, vmin=0, vmax=1):
             p_array = p_array.clamp(min=np.finfo(float).eps)  # Avoid division by zero
             entropy_map[i, j] = -torch.sum(p_array * torch.log2(p_array))
     
-    # step 2: cumpute the entropy of entropy map
-    map_entropy = entropy_map.view(-1).to('cpu').numpy().sum()
-    return entropy_map.cpu(), map_entropy
+    # step 2: compute the sum of entropy values greater than the threshold
+    entropy_values = entropy_map.view(-1).to('cpu')
+    average_entropy = entropy_values[entropy_values > threshold].median()
+    return entropy_map.cpu(), average_entropy.numpy()
+
+
+#%%
+
+# from tqdm import tqdm
+# threshold = 0
+
+# for img in tqdm(imgs_list):
+#     img_no = img
+#     output = MCDropout(img_no = img_no, num_samples = num_samples)
+#     entropy_map, image_entropy = entropy_generator(MCD_output = output, threshold=threshold)
+#     vmin, vmax = 0, 6
+#     plt.imshow(entropy_map.detach().numpy().T, cmap='plasma', aspect='auto', vmin=vmin, vmax=vmax)
+#     plt.colorbar()
+#     plt.xlabel(f'Uncertainty: {image_entropy:.4f}')
+#     plt.title(f'Heatmap of Entropy: {img_no}')
+#     plt.savefig(f'images/pointwise_entropy_heatmap_{img_no}_v2', bbox_inches='tight')
+#     plt.close()
 
 #%%
 
 from tqdm import tqdm
+threshold = 0
 
-for img in tqdm(imgs_list):
-    img_no = img
-    output = MCDropout(img_no = img_no, num_samples = num_samples)
-    entropy_map, image_entropy = entropy_generator(MCD_output = output)
-    vmin, vmax = 0, 6
-    plt.imshow(entropy_map.detach().numpy().T, cmap='plasma', aspect='auto', vmin=vmin, vmax=vmax)
-    plt.colorbar()
-    plt.xlabel(f'Shannon Entropy: {image_entropy:.4f}')
-    plt.title(f'Heatmap of Entropy: {img_no}')
-    plt.savefig(f'images/pointwise_entropy_heatmap_{img_no}_v2', bbox_inches='tight')
-    plt.close()
-
-#%%
-
-# import torch
-
-# entropy_map, image_entropy = entropy_generator(MCD_output = output)
-# vmin, vmax = 0, 6
-# plt.imshow(entropy_map.detach().numpy().T, cmap='plasma', aspect='auto', vmin=vmin, vmax=vmax)
-# plt.colorbar()
-# plt.xlabel(f'Shannon Entropy: {image_entropy:.4f}')
-# plt.title(f'Heatmap of Entropy: {img_no}')
-# plt.savefig(f'images/pointwise_entropy_heatmap_{img_no}_v2', bbox_inches='tight')
-# plt.close()
+entropy_map, image_entropy = entropy_generator(MCD_output = output, threshold=threshold)
+vmin, vmax = 0, 6
+plt.imshow(entropy_map.detach().numpy().T, cmap='plasma', aspect='auto', vmin=vmin, vmax=vmax)
+plt.colorbar()
+plt.xlabel(f'Uncertainty: {image_entropy:.4f}')
+plt.title(f'Heatmap of Entropy: {img_no}')
+plt.savefig(f'images/pointwise_entropy_heatmap_{img_no}_alea', bbox_inches='tight')
+plt.close()
 
 #%%
 

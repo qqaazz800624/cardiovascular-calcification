@@ -28,18 +28,9 @@ model.load_state_dict(model_weight)
 module_list = [module for module in model.modules()]
 children_list = [child for child in model.children()]
 #children_list
-print(children_list)
+#print(children_list)
+print(module_list)
 
 #%%
 
-# import torch
-# from addnoise import AddNoise
-
-# input = torch.rand([3,3,3])
-# noise_stddev = 2
-# noise_adder =  AddNoise(noise_stddev)
-# noise_adder(input)
-
-
-#%%
 
