@@ -28,8 +28,8 @@ model.load_state_dict(model_weight)
 module_list = [module for module in model.modules()]
 children_list = [child for child in model.children()]
 #children_list
-#print(children_list)
-print(module_list)
+print(children_list)
+#print(module_list)
 
 #%%
 
