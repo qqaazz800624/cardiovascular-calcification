@@ -7,6 +7,7 @@ import numpy as np
 from monai.transforms import LoadImage, Resize, ScaleIntensity
 from segmentation_MCDropout import SegmentationMCDropout
 from segmentation_MCDropout_alea import SegmentationMCDropout_alea
+from tqdm import tqdm
 
 def MCDropout(img_no, num_samples, uncertainty_typ = 'epistemic'):
     
@@ -71,62 +72,85 @@ imgs_list = ['054_20230116', '129_20230216', '144_20230221', '146_20230221',
             '013_20221118', '018_20221206', '025_20221213'
                   ]
 
-img_no = '144_20230221'
+img_no = '022_20221212'
 num_samples = 100
 #uncertainty_typ = 'epistemic'
 uncertainty_typ = 'aleatoric'
 output = MCDropout(img_no = img_no, num_samples = num_samples, uncertainty_typ = uncertainty_typ)
-pointwise_variance = torch.stack(output, dim=0).var(dim=0, keepdim=False)
 
-heatmap_output = pointwise_variance.T
-save_path = f'results/heatmap_{uncertainty_typ}_{img_no}.pth'
-torch.save(heatmap_output, save_path)
+
+def entropy_generator(MCD_output, bins=100, vmin=0, vmax=1, threshold=4):
+    device = "cuda:3" if torch.cuda.is_available() else "cpu"
+    stacked_output = torch.stack(MCD_output, dim=0).to(device)
+    entropy_map = torch.zeros(stacked_output.shape[1:], device=device)
+
+    # step 1: compute the entropy map
+    for i in tqdm(range(stacked_output.shape[1])):
+        for j in range(stacked_output.shape[2]):
+            pixel_values = stacked_output[:, i, j]
+            histogram = torch.histc(pixel_values, bins=bins, min=vmin, max=vmax)
+            p_array = histogram / histogram.sum()
+            p_array = p_array.clamp(min=np.finfo(float).eps)  # Avoid division by zero
+            entropy_map[i, j] = -torch.sum(p_array * torch.log2(p_array))
+    
+    # step 2: compute the sum of entropy values greater than the threshold
+    entropy_values = entropy_map.view(-1).to('cpu')
+    average_entropy = entropy_values[entropy_values > threshold].median()
+    return entropy_map.cpu(), average_entropy.numpy()
+
+
+threshold = 0
+entropy_map, image_entropy = entropy_generator(MCD_output = output, threshold=threshold)
+
+save_path = f'results/entropymap_{uncertainty_typ}_{img_no}.pth'
+torch.save([entropy_map.T, image_entropy], save_path)
 
 #%%
 import torch
 
-img_no = '144_20230221'
+img_no = '022_20221212'
 heatmap = []
 type_list = ['epistemic', 'aleatoric']
 for uncertainty_typ in type_list:
-    load_path = f'results/heatmap_{uncertainty_typ}_{img_no}.pth'
+    load_path = f'results/entropymap_{uncertainty_typ}_{img_no}.pth'
     heatmap.append(torch.load(load_path))
+
+#%% epistemic + aleatoric
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+vmin, vmax = 0, 6
+plt.imshow(heatmap[0][0].detach().numpy(), cmap='plasma', aspect='auto', vmin=vmin, vmax=vmax)
+plt.colorbar()
+plt.xlabel(f'Uncertainty: {heatmap[0][1]:.4f}')
+plt.title(f'Uncertainty: {img_no}')
+plt.show()
+
+#%% aleatoric
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+vmin, vmax = 0, 6
+plt.imshow(heatmap[1][0].detach().numpy(), cmap='plasma', aspect='auto', vmin=vmin, vmax=vmax)
+plt.colorbar()
+plt.xlabel(f'Uncertainty: {heatmap[1][1]:.4f}')
+plt.title(f'Aleatoric Uncertainty: {img_no}')
+plt.show()
+
 
 #%%
 import matplotlib.pyplot as plt
 import numpy as np
-from monai.transforms import AsDiscrete
 
-discreter = AsDiscrete(threshold=0.01)
-
-reduced_heatmap = heatmap[0] - heatmap[1]
-high_var = discreter(reduced_heatmap).sum()
-vmin, vmax = 0, 0.03
+reduced_heatmap = heatmap[0][0] - heatmap[1][0]
+median_entropy = reduced_heatmap.flatten().median().detach().numpy()
+vmin, vmax = 0, 6
 plt.imshow(reduced_heatmap.detach().numpy(), cmap='plasma', aspect='auto', vmin=vmin, vmax=vmax)
 plt.colorbar()
-plt.xlabel(f'Uncertainty: {high_var}')
+plt.xlabel(f'Uncertainty: {median_entropy:.4f}')
 plt.title(f'Epistemic Uncertainty: {img_no}')
 plt.show()
-
-#%%
-
-vmin, vmax = 0, 0.03
-high_var = discreter(heatmap[0]).sum()
-plt.imshow(heatmap[0].detach().numpy(), cmap='plasma', aspect='auto', vmin=vmin, vmax=vmax)
-plt.colorbar()
-plt.xlabel(f'Uncertainty: {high_var}')
-plt.title(f'Uncertainty: {img_no}')
-plt.show()
-
-#%%
-
-vmin, vmax = 0, 0.03
-high_var = discreter(heatmap[1]).sum()
-plt.imshow(heatmap[1].detach().numpy(), cmap='plasma', aspect='auto', vmin=vmin, vmax=vmax)
-plt.colorbar()
-plt.xlabel(f'Uncertainty: {high_var}')
-plt.title(f'Aleatoric Uncertainty: {img_no}')
-plt.show()
-
 
 #%%
