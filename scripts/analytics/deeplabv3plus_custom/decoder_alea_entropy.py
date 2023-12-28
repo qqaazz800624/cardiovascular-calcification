@@ -34,6 +34,7 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 from segmentation_models_pytorch.decoders.deeplabv3.decoder import DeepLabV3PlusDecoder, DeepLabV3Decoder
+from addnoise import AddNoise
 
 __all__ = ["DeepLabV3Decoder"]
 
@@ -64,7 +65,7 @@ class DeepLabV3PlusDecoder(nn.Module):
             nn.BatchNorm2d(out_channels),
             nn.ReLU(),
             ## added 
-            nn.Dropout2d(self.dropout_prob),
+            #nn.Dropout2d(self.dropout_prob),
         )
 
         scale_factor = 2 if output_stride == 8 else 4
@@ -77,7 +78,7 @@ class DeepLabV3PlusDecoder(nn.Module):
             nn.BatchNorm2d(highres_out_channels),
             nn.ReLU(),
             # added
-            nn.Dropout2d(self.dropout_prob)
+            #nn.Dropout2d(self.dropout_prob)
         )
         self.block2 = nn.Sequential(
             SeparableConv2d(
@@ -121,7 +122,7 @@ class ASPPConv(nn.Sequential):
             nn.BatchNorm2d(out_channels),
             nn.ReLU(),
             # aleatoric --> no
-            nn.Dropout2d()
+            #nn.Dropout2d()
         )
 
 
@@ -143,7 +144,7 @@ class ASPPSeparableConv(nn.Sequential):
             nn.BatchNorm2d(out_channels),
             nn.ReLU(),
             # aleatoric --> no
-            nn.Dropout2d(),
+            #nn.Dropout2d(),
         )
 
 
@@ -155,7 +156,7 @@ class ASPPPooling(nn.Sequential):
             nn.BatchNorm2d(out_channels),
             nn.ReLU(),
             # aleatoric --> no
-            nn.Dropout2d()
+            #nn.Dropout2d()
         )
 
     def forward(self, x):
@@ -175,7 +176,7 @@ class ASPP(nn.Module):
                 nn.BatchNorm2d(out_channels),
                 nn.ReLU(),
                 # aleatoric --> no
-                nn.Dropout2d()
+                #nn.Dropout2d()
             )
         )
 

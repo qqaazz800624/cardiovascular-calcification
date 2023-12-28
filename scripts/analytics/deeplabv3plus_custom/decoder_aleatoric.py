@@ -64,7 +64,7 @@ class DeepLabV3PlusDecoder(nn.Module):
             SeparableConv2d(out_channels, out_channels, kernel_size=3, padding=1, bias=False),
             nn.BatchNorm2d(out_channels),
             nn.ReLU(),
-            # aleatoric --> no
+            ## added 
             nn.Dropout2d(self.dropout_prob),
         )
 
@@ -77,7 +77,7 @@ class DeepLabV3PlusDecoder(nn.Module):
             nn.Conv2d(highres_in_channels, highres_out_channels, kernel_size=1, bias=False),
             nn.BatchNorm2d(highres_out_channels),
             nn.ReLU(),
-            # aleatoric --> no
+            # added
             nn.Dropout2d(self.dropout_prob)
         )
         self.block2 = nn.Sequential(
@@ -90,7 +90,7 @@ class DeepLabV3PlusDecoder(nn.Module):
             ),
             nn.BatchNorm2d(out_channels),
             nn.ReLU(),
-            # aleatoric --> no
+            # added
             nn.Dropout2d(self.dropout_prob)
         )
         

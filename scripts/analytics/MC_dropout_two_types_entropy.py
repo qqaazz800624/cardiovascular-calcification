@@ -25,7 +25,7 @@ def MCDropout(img_no, num_samples, uncertainty_typ = 'epistemic'):
         
     elif uncertainty_typ == 'aleatoric':
         model_config = {'name': 'DeepLabV3Plus',
-                        'path': 'deeplabv3plus_custom.models.DeepLabV3Plus_aleatoric',
+                        'path': 'deeplabv3plus_custom.models.DeepLabV3Plus_alea_entropy',
                         'args':{
                             'in_channels': 3,
                             'classes': 6,
@@ -140,7 +140,7 @@ plt.title(f'Aleatoric Uncertainty: {img_no}')
 plt.show()
 
 
-#%%
+#%% subtracted uncertainty
 import matplotlib.pyplot as plt
 import numpy as np
 

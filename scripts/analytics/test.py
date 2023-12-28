@@ -1,24 +1,32 @@
 #%%
 
-
-from pybaseball import playerid_lookup, statcast_pitcher
-
-
-player_id = playerid_lookup('cole', 'gerrit')
-id = player_id['key_mlbam'][0]
-data = statcast_pitcher(start_dt="2023-03-31", end_dt="2023-04-23", player_id=id)
-#data2022 = statcast_pitcher(start_dt="2022-03-30", end_dt="2022-04-05", player_id=id)
-data
-
-#%%
-
-data_ff = data.query("pitch_type == 'FF'")
+from deeplabv3plus_custom.models.DeepLabV3Plus_alea_entropy import DeepLabV3Plus
 
 
 #%%
 
+import torch
+from manafaln.core.builders import ModelBuilder
 
-data[data['pitch_type'].isin(['FF','KC'])]
+model_weight = 'deeplabv3plus_custom/model_ckpts/heart_seg_dropout.ckpt'
+model_config = {'name': 'DeepLabV3Plus',
+                #'path': 'deeplabv3plus_custom.models.DeepLabV3Plus_Dropout',
+                #'path': 'deeplabv3plus_custom.models.DeepLabV3Plus_aleatoric',
+                'path': 'deeplabv3plus_custom.models.DeepLabV3Plus_alea_entropy',
+                'args':{
+                    'in_channels': 3,
+                    'classes': 6,
+                    'encoder_name': 'tu-resnest50d',
+                    'encoder_weights': 'None'}
+                }
+
+model = ModelBuilder()(model_config)
+
+
+#%%
+
+
+
 
 
 #%%
