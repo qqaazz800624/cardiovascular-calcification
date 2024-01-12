@@ -54,15 +54,24 @@ def MCDropout(num_samples, fold_no, img_serial):
     generator_output = masks_generator(generator_input)
     return generator_output
 
-# num_samples = 10
-# fold_no = 'fold_0'
-# img_serial =  2
-# output = MCDropout(num_samples, fold_no, img_serial)
+#%%
 
-# from monai.transforms import AsDiscrete
-# discreter = AsDiscrete(threshold=0.001)
-# pointwise_variance = torch.stack(output, dim=0).var(dim=0, keepdim=False)
-# high_var = discreter(pointwise_variance).sum()
+num_samples = 100
+fold_no = 'fold_4'
+img_serial =  4
+output = MCDropout(num_samples, fold_no, img_serial)
+
+from monai.transforms import AsDiscrete
+discreter = AsDiscrete(threshold=0.001)
+pointwise_variance = torch.stack(output, dim=0).var(dim=0, keepdim=False)
+high_var = discreter(pointwise_variance).sum()
+vmin, vmax = 0, 0.03
+plt.imshow(pointwise_variance.detach().numpy().T, cmap='plasma', aspect='auto', vmin=vmin, vmax=vmax)
+plt.colorbar()
+plt.xlabel(f'Uncertainty: {high_var}')
+plt.title(f'Heatmap of Variance: {fold_no}_{img_serial}')
+plt.savefig(f'images/pointwise_var_heatmap_{fold_no}_{img_serial}', bbox_inches='tight')
+plt.close()
 
 #%%
 
