@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from monai.transforms import LoadImage, Resize, ScaleIntensity
 from segmentation_MCDropout import SegmentationMCDropout
-from segmentation_MCDropout_alea import SegmentationMCDropout_alea
+from scripts.analytics.segmentation_MCDropout import SegmentationMCDropout
 
 
 def MCDropout(num_samples, fold_no, img_serial):

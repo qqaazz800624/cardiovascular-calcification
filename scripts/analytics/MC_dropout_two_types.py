@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from monai.transforms import LoadImage, Resize, ScaleIntensity
 from segmentation_MCDropout import SegmentationMCDropout
-from segmentation_MCDropout_alea import SegmentationMCDropout_alea
+from scripts.analytics.segmentation_MCDropout_no_sigmoid import SegmentationMCDropout
 
 def MCDropout(img_no, num_samples, uncertainty_typ = 'epistemic'):
     
@@ -43,7 +43,7 @@ def MCDropout(img_no, num_samples, uncertainty_typ = 'epistemic'):
     if uncertainty_typ == 'epistemic':
         masks_generator = SegmentationMCDropout(model_config=model_config, model_weight=model_weight, num_samples=num_samples)
     elif uncertainty_typ == 'aleatoric':
-        masks_generator = SegmentationMCDropout_alea(model_config=model_config, model_weight=model_weight, num_samples=num_samples)
+        masks_generator = SegmentationMCDropout(model_config=model_config, model_weight=model_weight, num_samples=num_samples)
 
     data_root = f'../../data/neodata/dicom/{img_no}'
     path_list = []
