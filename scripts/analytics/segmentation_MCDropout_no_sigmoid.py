@@ -1,5 +1,6 @@
 import torch
 from manafaln.core.builders import ModelBuilder
+from tqdm import tqdm
 
 device = "cuda:3" if torch.cuda.is_available() else "cuda:2"
 
@@ -26,7 +27,7 @@ class SegmentationMCDropout():
         sample_masks = []
         self.model.eval()
         self.model.enable_random(self.model)
-        for _ in range(self.num_samples):
+        for _ in tqdm(range(self.num_samples)):
             logit = self.model.random_forward(img)
             mask_heart = logit[0, 2]  # take segmentation mask of heart and use original logits without sigmoid functions
             mask_heart = mask_heart.detach().cpu()
