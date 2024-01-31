@@ -6,7 +6,7 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 from monai.transforms import LoadImage, Resize, ScaleIntensity
-from segmentation_MCDropout import SegmentationMCDropout
+from segmentation_MCDropout_no_sigmoid import SegmentationMCDropout
 from tqdm import tqdm 
 
 def MCDropout(num_samples, fold_no, img_serial):
