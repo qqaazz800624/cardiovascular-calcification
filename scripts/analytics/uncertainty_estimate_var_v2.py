@@ -13,7 +13,7 @@ def MCDropout(num_samples, fold_no, img_serial):
 
     model_weight = 'deeplabv3plus_custom/model_ckpts/heart_seg_dropout.ckpt'   
     model_config = {'name': 'DeepLabV3Plus',
-                    'path': 'seg_model',
+                    'path': 'deeplabv3plus_custom.models.DeepLabV3Plus_Dropout',
                     'args':{
                         'in_channels': 3,
                         'classes': 6,
