@@ -26,7 +26,7 @@ Prob_UNet = ProbUNet(
     optimizer=partial(torch.optim.AdamW, lr=3.0e-4, weight_decay=1e-5, amsgrad=True)
     )
 
-data_module = TMUHDataModule(batch_size=16)
+data_module = TMUHDataModule()
 
 
 #%%
