@@ -73,9 +73,8 @@ X_train, y_train, train_loader, X_test, y_test, test_loader = (
     dm.test_dataloader(),
 )
 
-fig = plot_toy_regression_data(X_train, y_train, X_test, y_test)
+#fig = plot_toy_regression_data(X_train, y_train, X_test, y_test)
 
-#%%
 
 network = MLP(n_inputs=1, n_hidden=[50, 50], n_outputs=2, activation_fn=nn.Tanh())
 
@@ -89,23 +88,26 @@ non_trainable_params = sum(p.numel() for p in network.parameters() if not p.requ
 print(f"Total number of trainable parameters: {trainable_params}")
 print(f"Total number of non-trainable parameters: {non_trainable_params}")
 
-
 #%%
+
 network
 
 #%%
+
 
 bbp_model = BNN_VI_ELBO_Regression(
     network,
     optimizer=partial(torch.optim.Adam, lr=1e-2),
     criterion=NLL(),
-    stochastic_module_names=[2],
+    stochastic_module_names=[0,1,2],
     num_mc_samples_train=10,
     num_mc_samples_test=25,
     burnin_epochs=20,
 )
+network
 
 #%%
+
 
 logger = CSVLogger(my_temp_dir)
 trainer = Trainer(
@@ -134,8 +136,8 @@ print(param_names)
 
 #%%
 
-print('Parameters: ', bbp_model.get_parameter('model.model.6.rho_weight'))
-print('Parameter shape: ', bbp_model.get_parameter('model.model.6.rho_weight').shape)
+print('Parameters: ', bbp_model.get_parameter('model.model.3.mu_weight'))
+print('Parameter shape: ', bbp_model.get_parameter('model.model.3.mu_weight').shape)
 
 #%%
 
@@ -148,6 +150,7 @@ non_trainable_params = sum(p.numel() for p in bbp_model.parameters() if not p.re
 
 print(f"Total number of trainable parameters: {trainable_params}")
 print(f"Total number of non-trainable parameters: {non_trainable_params}")
+
 
 
 #%%
