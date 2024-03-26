@@ -12,7 +12,13 @@ from manafaln.transforms import LoadJSONd, ParseXAnnotationSegmentationLabeld, I
 class TMUHDataModule(LightningDataModule):
     """Toy segmentation datamodule."""
 
-    def __init__(self, batch_size=16):
+    def __init__(self, 
+                 batch_size_train = 6,
+                 num_workers_train = 6,
+                 batch_size_val = 32,
+                 num_workers_val = 16,
+                 batch_size_test = 1,
+                 num_workers_test = 1):
         """Initialize a toy image segmentation datamodule.
 
         Args:
@@ -21,7 +27,14 @@ class TMUHDataModule(LightningDataModule):
             batch_size: batch size
         """
         super().__init__()
-        self.batch_size = batch_size
+
+        self.batch_size_train = batch_size_train
+        self.batch_size_val = batch_size_val
+        self.batch_size_test = batch_size_test
+
+        self.num_workers_train = num_workers_train
+        self.num_workers_val = num_workers_val
+        self.num_workers_test = num_workers_test
         
         self.train_folds = ['fold_0', 'fold_1', 'fold_2']
         self.val_folds = ['fold_3']
@@ -102,21 +115,24 @@ class TMUHDataModule(LightningDataModule):
         """Return the train dataloader."""
         return DataLoader(
             TMUHDataset(folds=self.train_folds, transform=self.train_transforms),
-            batch_size=self.batch_size,
+            batch_size=self.batch_size_train,
+            num_workers=self.num_workers_train
         )
 
     def val_dataloader(self) -> DataLoader:
         """Return the val dataloader."""
         return DataLoader(
             TMUHDataset(folds=self.val_folds, transform=self.val_transforms),
-            batch_size=self.batch_size,
+            batch_size=self.batch_size_val,
+            num_workers=self.num_workers_val
         )
 
     def test_dataloader(self) -> DataLoader:
         """Return the test dataloader."""
         return DataLoader(
             TMUHDataset(folds=self.test_folds, transform=self.test_transforms),
-            batch_size=self.batch_size,
+            batch_size=self.batch_size_test,
+            num_workers=self.num_workers_test
         )
 
 
