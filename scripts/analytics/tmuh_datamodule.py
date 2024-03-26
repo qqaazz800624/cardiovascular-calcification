@@ -116,7 +116,9 @@ class TMUHDataModule(LightningDataModule):
         return DataLoader(
             TMUHDataset(folds=self.train_folds, transform=self.train_transforms),
             batch_size=self.batch_size_train,
-            num_workers=self.num_workers_train
+            num_workers=self.num_workers_train,
+            shuffle=True,
+            drop_last=True
         )
 
     def val_dataloader(self) -> DataLoader:
