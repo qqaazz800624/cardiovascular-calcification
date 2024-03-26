@@ -37,14 +37,14 @@ workflow:
       interval: epoch
       frequency: 1
     decollate:
-      validation: [label, pred]
+      validation: [target, pred]
       predict: [image1, image1_meta_dict, pred]
 
   components:
     model:
       name: DeepLabV3Plus
       path: segmentation_models_pytorch
-      input_keys: image
+      input_keys: input
       output_keys: pred
       args:
         in_channels: 3
@@ -55,7 +55,7 @@ workflow:
     loss:
       - name: DiceLoss
         log_label: dice_loss
-        input_keys: [pred, label]
+        input_keys: [pred, target]
         args:
           sigmoid: true
 
@@ -85,7 +85,7 @@ workflow:
             threshold: 0.5
         - name: SplitDimd
           args:
-            keys: [pred, label]
+            keys: [pred, target]
             keepdim: True
             dim: 0
             output_postfixes: [Chest_Margin, Lung_Margin, Heart_Margin, Pleural_Effusion, Pneumonia, Nodule]
@@ -133,7 +133,7 @@ data:
   name: DecathlonDataModule
 
   settings:
-    data_list: /neodata/oxr/tmuh/datalist.json
+    data_list: /neodata/oxr/tmuh/datalist_b.json
     data_root: /neodata/oxr/tmuh
 
   training:
@@ -144,108 +144,47 @@ data:
     transforms:
       - name: LoadImaged
         args:
-          keys: image1
+          keys: [image1, image2, image3]
           ensure_channel_first: True
           reader: PydicomReader
       - name: Resized
         args:
-          keys: image1
+          keys: [image1, image2, image3]
           spatial_size: [512, 512]
       - name: ScaleIntensityd
         args:
-          keys: image1
-      - name: SaveImaged
-        args:
-          keys: image1
-          output_postfix: c1
-          output_dir: /neodata/oxr/tmuh/visual/image
-          print_log: false
-          output_ext: png
-          output_dtype: uint8
-          scale: 255
-      - name: LoadImaged
-        args:
-          keys: image2
-          ensure_channel_first: True
-          reader: PydicomReader
-      - name: Resized
-        args:
-          keys: image2
-          spatial_size: [512, 512]
-      - name: ScaleIntensityd
-        args:
-          keys: image2
-      - name: SaveImaged
-        args:
-          keys: image2
-          output_postfix: c2
-          output_dir: /neodata/oxr/tmuh/visual/image
-          print_log: false
-          output_ext: png
-          output_dtype: uint8
-          scale: 255
-      - name: LoadImaged
-        args:
-          keys: image3
-          ensure_channel_first: True
-          reader: PydicomReader
-      - name: Resized
-        args:
-          keys: image3
-          spatial_size: [512, 512]
-      - name: ScaleIntensityd
-        args:
-          keys: image3
-      - name: SaveImaged
-        args:
-          keys: image3
-          output_postfix: c3
-          output_dir: /neodata/oxr/tmuh/visual/image
-          print_log: false
-          output_ext: png
-          output_dtype: uint8
-          scale: 255
+          keys: [image1, image2, image3]
       - name: ConcatItemsd
         args:
           keys: [image1, image2, image3]
-          name: image
+          name: image         
       - name: LoadJSONd
         args:
-          keys: label
+          keys: target   
       - name: ParseXAnnotationSegmentationLabeld
         args:
-          keys: label
+          keys: target     
           # 'Chest Margin', 'Lung Margin', 'Heart Margin', 'Pleural Effusion', 'Pneumonia', 'Nodule'
           item_keys: ['#ff7f00', '#ff0000', '#7f007f', '#0000ff', '#00ff00', '#ffff00']
       - name: Interpolated
         args:
-          keys: label
+          keys: target     
           spatial_size: [512, 512]
       - name: DeleteItemsd
         args:
-          keys: label_meta_dict.meta_points
+          keys: target_meta_dict.meta_points
       - name: OverlayMaskd
         args:
           image_keys: image1
-          mask_keys: label
-          names: label_visual
+          mask_keys: target
+          names: target_visual
           colors: ['#ff7f00', '#ff0000', '#7f007f', '#0000ff', '#00ff00', '#ffff00']
-      - name: SaveImaged
-        args:
-          keys: label_visual
-          meta_keys: image1_meta_dict
-          output_postfix: label
-          output_dir: /neodata/oxr/tmuh/visual/label
-          print_log: false
-          output_ext: png
-          output_dtype: uint8
-          scale: 255
       - name: Filld
         args:
-          keys: label
+          keys: target
       - name: RandAffined
         args:
-          keys: [image, label]
+          keys: [image, target]
           prob: 1.0
           rotate_range: 0.25
           shear_range: 0.2
@@ -254,12 +193,12 @@ data:
           padding_mode: zeros
       - name: EnsureTyped
         args:
-          keys: [image, label, label_meta_dict]
+          keys: [image, target, target_meta_dict]
           dtype: float32
     dataset:
       name: CacheNTransDataset
       args:
-        cache_n_trans: 20
+        cache_n_trans: 15
         cache_dir: /neodata/oxr/tmuh/cache
     dataloader:
       name: DataLoader
@@ -275,113 +214,43 @@ data:
     transforms:
       - name: LoadImaged
         args:
-          keys: image1
+          keys: [image1, image2, image3]
           ensure_channel_first: True
           reader: PydicomReader
       - name: Resized
         args:
-          keys: image1
+          keys: [image1, image2, image3]
           spatial_size: [512, 512]
       - name: ScaleIntensityd
         args:
-          keys: image1
-      - name: SaveImaged
-        args:
-          keys: image1
-          output_postfix: c1
-          output_dir: /neodata/oxr/tmuh/visual/image
-          print_log: false
-          output_ext: png
-          output_dtype: uint8
-          scale: 255
-      - name: LoadImaged
-        args:
-          keys: image2
-          ensure_channel_first: True
-          reader: PydicomReader
-      - name: Resized
-        args:
-          keys: image2
-          spatial_size: [512, 512]
-      - name: ScaleIntensityd
-        args:
-          keys: image2
-      - name: SaveImaged
-        args:
-          keys: image2
-          output_postfix: c2
-          output_dir: /neodata/oxr/tmuh/visual/image
-          print_log: false
-          output_ext: png
-          output_dtype: uint8
-          scale: 255
-      - name: LoadImaged
-        args:
-          keys: image3
-          ensure_channel_first: True
-          reader: PydicomReader
-      - name: Resized
-        args:
-          keys: image3
-          spatial_size: [512, 512]
-      - name: ScaleIntensityd
-        args:
-          keys: image3
-      - name: SaveImaged
-        args:
-          keys: image3
-          output_postfix: c3
-          output_dir: /neodata/oxr/tmuh/visual/image
-          print_log: false
-          output_ext: png
-          output_dtype: uint8
-          scale: 255
+          keys: [image1, image2, image3]
       - name: ConcatItemsd
         args:
           keys: [image1, image2, image3]
           name: image
       - name: LoadJSONd
         args:
-          keys: label
+          keys: target   
       - name: ParseXAnnotationSegmentationLabeld
         args:
-          keys: label
+          keys: target   
           # 'Chest Margin', 'Lung Margin', 'Heart Margin', 'Pleural Effusion', 'Pneumonia', 'Nodule'
           item_keys: ['#ff7f00', '#ff0000', '#7f007f', '#0000ff', '#00ff00', '#ffff00']
       - name: Interpolated
         args:
-          keys: label
+          keys: target   
           spatial_size: [512, 512]
-      - name: DeleteItemsd
-        args:
-          keys: label_meta_dict.meta_points
-      - name: OverlayMaskd
-        args:
-          image_keys: image1
-          mask_keys: label
-          names: label_visual
-          colors: ['#ff7f00', '#ff0000', '#7f007f', '#0000ff', '#00ff00', '#ffff00']
-      - name: SaveImaged
-        args:
-          keys: label_visual
-          meta_keys: image1_meta_dict
-          output_postfix: label
-          output_dir: /neodata/oxr/tmuh/visual/label
-          print_log: false
-          output_ext: png
-          output_dtype: uint8
-          scale: 255
       - name: Filld
         args:
-          keys: label
+          keys: target
       - name: EnsureTyped
         args:
-          keys: [image, label, label_meta_dict]
+          keys: [image, target, target_meta_dict]
           dtype: float32
     dataset:
       name: CacheNTransDataset
       args:
-        cache_n_trans: 20
+        cache_n_trans: 15
         cache_dir: /neodata/oxr/tmuh/cache
     dataloader:
       name: DataLoader
@@ -396,113 +265,43 @@ data:
     transforms:
       - name: LoadImaged
         args:
-          keys: image1
+          keys: [image1, image2, image3]
           ensure_channel_first: True
           reader: PydicomReader
       - name: Resized
         args:
-          keys: image1
+          keys: [image1, image2, image3]
           spatial_size: [512, 512]
       - name: ScaleIntensityd
         args:
-          keys: image1
-      - name: SaveImaged
-        args:
-          keys: image1
-          output_postfix: c1
-          output_dir: /neodata/oxr/tmuh/visual/image
-          print_log: false
-          output_ext: png
-          output_dtype: uint8
-          scale: 255
-      - name: LoadImaged
-        args:
-          keys: image2
-          ensure_channel_first: True
-          reader: PydicomReader
-      - name: Resized
-        args:
-          keys: image2
-          spatial_size: [512, 512]
-      - name: ScaleIntensityd
-        args:
-          keys: image2
-      - name: SaveImaged
-        args:
-          keys: image2
-          output_postfix: c2
-          output_dir: /neodata/oxr/tmuh/visual/image
-          print_log: false
-          output_ext: png
-          output_dtype: uint8
-          scale: 255
-      - name: LoadImaged
-        args:
-          keys: image3
-          ensure_channel_first: True
-          reader: PydicomReader
-      - name: Resized
-        args:
-          keys: image3
-          spatial_size: [512, 512]
-      - name: ScaleIntensityd
-        args:
-          keys: image3
-      - name: SaveImaged
-        args:
-          keys: image3
-          output_postfix: c3
-          output_dir: /neodata/oxr/tmuh/visual/image
-          print_log: false
-          output_ext: png
-          output_dtype: uint8
-          scale: 255
+          keys: [image1, image2, image3]
       - name: ConcatItemsd
         args:
           keys: [image1, image2, image3]
           name: image
       - name: LoadJSONd
         args:
-          keys: label
+          keys: target  
       - name: ParseXAnnotationSegmentationLabeld
         args:
-          keys: label
+          keys: target  
           # 'Chest Margin', 'Lung Margin', 'Heart Margin', 'Pleural Effusion', 'Pneumonia', 'Nodule'
           item_keys: ['#ff7f00', '#ff0000', '#7f007f', '#0000ff', '#00ff00', '#ffff00']
       - name: Interpolated
         args:
-          keys: label
+          keys: target  
           spatial_size: [512, 512]
-      - name: DeleteItemsd
-        args:
-          keys: label_meta_dict.meta_points
-      - name: OverlayMaskd
-        args:
-          image_keys: image1
-          mask_keys: label
-          names: label_visual
-          colors: ['#ff7f00', '#ff0000', '#7f007f', '#0000ff', '#00ff00', '#ffff00']
-      - name: SaveImaged
-        args:
-          keys: label_visual
-          meta_keys: image1_meta_dict
-          output_postfix: label
-          output_dir: /neodata/oxr/tmuh/visual/label
-          print_log: false
-          output_ext: png
-          output_dtype: uint8
-          scale: 255
       - name: Filld
         args:
-          keys: label
+          keys: target   
       - name: EnsureTyped
         args:
-          keys: [image, label, label_meta_dict]
+          keys: [image, target]
           dtype: float32
     dataset:
       name: CacheNTransDataset
       args:
-        cache_n_trans: 20
+        cache_n_trans: 14
         cache_dir: /neodata/oxr/tmuh/cache
     dataloader:
       name: DataLoader
