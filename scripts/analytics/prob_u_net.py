@@ -14,22 +14,17 @@ from lightning.pytorch.loggers import CSVLogger
 from lightning_uq_box.uq_methods.prob_unet import ProbUNet
 
 from tmuh_datamodule import TMUHDataModule
-
-
 #%%
 
 my_temp_dir = 'results/'
 
-network = Unet(in_channels=3, classes=6, encoder_name = 'tu-resnest50d', encoder_weights = 'imagenet')
+network = Unet(in_channels=3, classes=2, encoder_name = 'tu-resnest50d', encoder_weights = 'imagenet')
 Prob_UNet = ProbUNet(
     model=network,
     optimizer=partial(torch.optim.AdamW, lr=3.0e-4, weight_decay=1e-5, amsgrad=True)
     )
 
 data_module = TMUHDataModule()
-
-
-#%%
 
 logger = CSVLogger(my_temp_dir)
 trainer = Trainer(
