@@ -13,10 +13,10 @@ class TMUHDataModule(LightningDataModule):
     """Toy segmentation datamodule."""
 
     def __init__(self, 
-                 batch_size_train = 6,
-                 num_workers_train = 6,
-                 batch_size_val = 32,
-                 num_workers_val = 16,
+                 batch_size_train = 8,
+                 num_workers_train = 4,
+                 batch_size_val = 8,
+                 num_workers_val = 4,
                  batch_size_test = 1,
                  num_workers_test = 1):
         """Initialize a toy image segmentation datamodule.
